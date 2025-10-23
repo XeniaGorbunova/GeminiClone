@@ -9,6 +9,5 @@ export const runChat = async (prompt: string): Promise<string> => {
     model: "gemini-2.5-flash",
     contents: prompt,
   });
-  console.log(response.text);
   return response.text ?? '';
 }

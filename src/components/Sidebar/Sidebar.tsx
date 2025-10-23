@@ -2,14 +2,23 @@ import { memo, useContext, useState, type FC } from "react";
 import './sidebar.css';
 import { assets } from '../../assets/assets';
 import { AppContext } from "../../context/Context";
+import { localStorageHandler } from "../../helpers/LocalStorageHandler";
 
 export const Sidebar: FC = memo(() => {
     const [extended, setExtended] = useState(false);
-    const { onSent, prevPrompts, setRecentPrompt, newChat } = useContext(AppContext);
+    const { onSent, prevPrompts, setRecentPrompt, newChat, setPrevPrompts } = useContext(AppContext);
 
     const loadPrompt = async (prompt: string) => {
         setRecentPrompt(prompt);
         await onSent(prompt);
+    }
+
+    const deletePrompt = (e: React.MouseEvent<HTMLImageElement>, prompt: string) => {
+        e.stopPropagation();
+
+        const filteredPrompts = prevPrompts.filter((item: string) => item !== prompt);
+        setPrevPrompts(filteredPrompts);
+        localStorageHandler.savePrevPrompts(filteredPrompts);
     }
 
     const collapseMenuHandler = () => setExtended((prev) => !prev);
@@ -29,8 +38,11 @@ export const Sidebar: FC = memo(() => {
                             {prevPrompts.map((prompt: string, index: number) => {
                             return (
                             <div key={index} onClick={() => loadPrompt(prompt)} className="recent-entry">
-                                <img src={assets.message_icon} alt="message" />
-                                <p>{prompt.slice(0, 18)} ...</p>
+                                <div className="recent-entry-text">
+                                    <img src={assets.message_icon} alt="message" />
+                                    <p>{prompt.slice(0, 18)} ...</p>
+                                </div>
+                                <img className="trash-icon" src={assets.trash_icon} alt="delete" onClick={(e) => deletePrompt(e, prompt)} />
                             </div>
                             )
                         })}

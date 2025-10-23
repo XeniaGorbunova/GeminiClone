@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { AppContext, ResultContext } from "./Context";
 import { runChat } from "../config/gemini";
-import { ResultContextType, type AppContextType } from "./models";
+import { type ResultContextType, type AppContextType } from "./models";
+import { localStorageHandler } from "../helpers/LocalStorageHandler";
 
 export const ContextProvider = (props: {children: ReactNode}) => {
     const [recentPrompt, setRecentPrompt] = useState('');
-    const [prevPrompts, setPrevPrompts] = useState<string[]>(localStorage.getItem('prevPrompts') ? JSON.parse(localStorage.getItem('prevPrompts')!) : []);
+    const [prevPrompts, setPrevPrompts] = useState<string[]>(localStorageHandler.getPrevPrompts());
     const [showResult, setShowResult] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [resultData, setResultData] = useState('');
@@ -34,7 +35,7 @@ export const ContextProvider = (props: {children: ReactNode}) => {
         let response = '';
         setRecentPrompt(prompt);
         if (!prevPrompts.includes(prompt)) {
-            localStorage.setItem('prevPrompts', JSON.stringify([...prevPrompts, prompt]));
+            localStorageHandler.savePrevPrompts([...prevPrompts, prompt]);
             setPrevPrompts((prev) => [...prev, prompt]);
         }
         
@@ -46,13 +47,14 @@ export const ContextProvider = (props: {children: ReactNode}) => {
 
     const appContextValue = useMemo<AppContextType>(() => ({
         prevPrompts,
+        setPrevPrompts,
         onSent,
         recentPrompt,
         setRecentPrompt,
         isLoading,
         showResult,
         newChat
-    }), [prevPrompts, onSent, recentPrompt, setRecentPrompt, isLoading, showResult, newChat]);
+    }), [prevPrompts, setPrevPrompts, onSent, recentPrompt, setRecentPrompt, isLoading, showResult, newChat]);
 
     const resultContextValue = useMemo<ResultContextType>(() => ({resultData}), [resultData]);
 
