@@ -4,7 +4,6 @@ import { AppContext } from "../../context/Context";
 import './SearchInput.css';
 
 export const SearchInput: FC = () => {
-    console.log('SearchInput');
     const [input, setInput] = useState('');
     const  { onSent } = useContext(AppContext);
 

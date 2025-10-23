@@ -39,6 +39,11 @@
         margin: 30px 0 20px 0;
     }
 
+    .recent-entries {
+        max-height: calc(100vh - 300px);
+        overflow-y: auto;
+    }
+
     .recent-entry {
         display: flex;
         align-items: flex-start;

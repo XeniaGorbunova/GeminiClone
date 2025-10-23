@@ -25,7 +25,8 @@ export const Sidebar: FC = memo(() => {
                 { extended ? 
                     <div className="recent">
                         <p className="recent-title">Recent</p>
-                        {prevPrompts.map((prompt: string, index: number) => {
+                        <div className="recent-entries">
+                            {prevPrompts.map((prompt: string, index: number) => {
                             return (
                             <div key={index} onClick={() => loadPrompt(prompt)} className="recent-entry">
                                 <img src={assets.message_icon} alt="message" />
@@ -33,6 +34,7 @@ export const Sidebar: FC = memo(() => {
                             </div>
                             )
                         })}
+                        </div>
                     </div>
                     : null
                 }    
