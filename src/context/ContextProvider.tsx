@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
-import { Context } from "./Context";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { AppContext, ResultContext } from "./Context";
 import { runChat } from "../config/gemini";
 
 export const ContextProvider = (props: {children: ReactNode}) => {
@@ -21,12 +21,12 @@ export const ContextProvider = (props: {children: ReactNode}) => {
         timeoutRefs.current.push(timeoutId);    
     };
 
-    const newChat = () => {
+    const newChat = useCallback(() => {
         setIsLoading(false);
         setShowResult(false);
-    };
+    }, []);
 
-    const onSent = async (prompt: string) => {
+    const onSent = useCallback(async (prompt: string) => {
         setResultData('');
         setIsLoading(true);
         setShowResult(true);
@@ -40,19 +40,20 @@ export const ContextProvider = (props: {children: ReactNode}) => {
         const responseArray = response.split(' ');
         responseArray.forEach((word, index) => delayPara(index, word + ' '));
         setIsLoading(false);
-    }
+    }, []);
 
-    const contextValue = {
+    const appContextValue = useMemo(() => ({
         prevPrompts,
         setPrevPrompts,
         onSent,
         recentPrompt,
         setRecentPrompt,
         isLoading,
-        resultData,
         showResult,
         newChat
-    };
+    }), [prevPrompts, setPrevPrompts, onSent, recentPrompt, setRecentPrompt, isLoading, showResult, newChat]);
+
+    const resultContextValue = useMemo(() => ({resultData}), [resultData]);
 
     const clearAllTimeouts = () => {
         timeoutRefs.current.forEach((timeoutId) => {
@@ -68,8 +69,10 @@ export const ContextProvider = (props: {children: ReactNode}) => {
     }, []);
 
     return (
-        <Context.Provider value={contextValue}>
-            {props.children}
-        </Context.Provider>
+        <AppContext.Provider value={appContextValue}>
+            <ResultContext.Provider value={resultContextValue}>
+                {props.children}
+            </ResultContext.Provider>
+        </AppContext.Provider>
     )
 }

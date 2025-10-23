@@ -1,11 +1,12 @@
 import { useContext, useState, type FC } from "react"
 import { assets } from "../../assets/assets";
-import { Context } from "../../context/Context";
+import { AppContext } from "../../context/Context";
 import './SearchInput.css';
 
 export const SearchInput: FC = () => {
+    console.log('SearchInput');
     const [input, setInput] = useState('');
-    const  { onSent } = useContext(Context);
+    const  { onSent } = useContext(AppContext);
 
     const inputHandler = (e: React.ChangeEvent<HTMLInputElement>) => setInput(e.target.value);
     const sendPromptHandler = () => {

@@ -1,13 +1,13 @@
 import { useContext, useState, type FC } from "react";
 import './sidebar.css';
 import { assets } from '../../assets/assets';
-import { Context } from "../../context/Context";
+import { AppContext } from "../../context/Context";
 import React from "react";
 
 export const Sidebar: FC = React.memo(() => {
     console.log('Sidebar');
     const [extended, setExtended] = useState(false);
-    const { onSent, prevPrompts, setRecentPrompt, newChat } = useContext(Context);
+    const { onSent, prevPrompts, setRecentPrompt, newChat } = useContext(AppContext);
 
     const loadPrompt = async (prompt: string) => {
         setRecentPrompt(prompt);

@@ -1,8 +1,9 @@
-import type { FC } from "react";
+import { memo, type FC } from "react";
 import { assets } from "../../assets/assets";
 import './Greeting.css';
 
-export const Greeting: FC = () => {
+export const Greeting: FC = memo(() => {
+    console.log('Greeting');
     return (
         <>
             <div className="greet">
@@ -29,4 +30,4 @@ export const Greeting: FC = () => {
             </div>
         </>
     );
-}
+})
