@@ -62,7 +62,7 @@
 
     .recent-entry-text {
         display: flex;
-        align-items: flex-start;
+        justify-content: flex-start;
         gap: 10px;
     }
 

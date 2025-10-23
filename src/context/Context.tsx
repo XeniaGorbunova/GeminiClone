@@ -3,3 +3,4 @@ import { type ResultContextType, type AppContextType } from "./models";
 
 export const AppContext = createContext<AppContextType>({} as AppContextType);
 export const ResultContext = createContext<ResultContextType>({} as ResultContextType);
+export const ErrorContext = createContext<ResultContextType>({} as ErrorContextType);

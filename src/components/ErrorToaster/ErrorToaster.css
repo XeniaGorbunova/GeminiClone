@@ -1,0 +1,10 @@
+.toaster {
+    position: absolute;
+    top: 30px;
+    right: 30px;
+    padding: 16px;
+    background-color: rgb(238, 103, 103);
+    color: rgb(48, 37, 37);
+    border-radius: 30px;
+    z-index: 1;
+}

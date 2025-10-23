@@ -9,6 +9,9 @@ export const SearchInput: FC = () => {
 
     const inputHandler = (e: React.ChangeEvent<HTMLInputElement>) => setInput(e.target.value);
     const sendPromptHandler = () => {
+        if (!input.trim()) {
+            return;
+        }
         setInput('');
         onSent(input);
     }

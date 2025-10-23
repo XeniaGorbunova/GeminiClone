@@ -52,15 +52,15 @@ export const Sidebar: FC = memo(() => {
                 }    
             </div>
             <div className="bottom">
-                <div className="bottom-item recent-entry">
+                <div className="bottom-item recent-entry recent-entry-text">
                     <img src={assets.question_icon} alt="" />
                     {extended ? <p>Help</p> : null}
                 </div>
-                <div className="bottom-item recent-entry">
+                <div className="bottom-item recent-entry recent-entry-text">
                     <img src={assets.history_icon} alt="" />
                     {extended ? <p>Activity</p> : null}
                 </div>
-                <div className="bottom-item recent-entry">
+                <div className="bottom-item recent-entry recent-entry-text">
                     <img src={assets.setting_icon} alt="" />
                     {extended ? <p>Settings</p> : null}
                 </div>
