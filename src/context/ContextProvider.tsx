@@ -4,7 +4,7 @@ import { runChat } from "../config/gemini";
 
 export const ContextProvider = (props: {children: ReactNode}) => {
     const [recentPrompt, setRecentPrompt] = useState('');
-    const [prevPrompts, setPrevPrompts] = useState<string[]>([]);
+    const [prevPrompts, setPrevPrompts] = useState<string[]>(localStorage.getItem('prevPrompts') ? JSON.parse(localStorage.getItem('prevPrompts')!) : []);
     const [showResult, setShowResult] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [resultData, setResultData] = useState('');
@@ -32,7 +32,9 @@ export const ContextProvider = (props: {children: ReactNode}) => {
         setShowResult(true);
         let response = '';
         setRecentPrompt(prompt);
+        console.log({prevPrompts});
         if (!prevPrompts.includes(prompt)) {
+            localStorage.setItem('prevPrompts', JSON.stringify([...prevPrompts, prompt]));
             setPrevPrompts((prev) => [...prev, prompt]);
         }
         
@@ -40,18 +42,17 @@ export const ContextProvider = (props: {children: ReactNode}) => {
         const responseArray = response.split(' ');
         responseArray.forEach((word, index) => delayPara(index, word + ' '));
         setIsLoading(false);
-    }, []);
+    }, [prevPrompts]);
 
     const appContextValue = useMemo(() => ({
         prevPrompts,
-        setPrevPrompts,
         onSent,
         recentPrompt,
         setRecentPrompt,
         isLoading,
         showResult,
         newChat
-    }), [prevPrompts, setPrevPrompts, onSent, recentPrompt, setRecentPrompt, isLoading, showResult, newChat]);
+    }), [prevPrompts, onSent, recentPrompt, setRecentPrompt, isLoading, showResult, newChat]);
 
     const resultContextValue = useMemo(() => ({resultData}), [resultData]);
 

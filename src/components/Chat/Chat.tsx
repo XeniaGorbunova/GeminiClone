@@ -5,7 +5,6 @@ import './Chat.css';
 import { AppContext, ResultContext } from "../../context/Context";
 
 export const Chat: FC = () => {
-    console.log('Chat');
     const { isLoading, recentPrompt } = useContext(AppContext);
     const { resultData } = useContext(ResultContext);
     

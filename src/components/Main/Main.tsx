@@ -1,14 +1,12 @@
 import { useContext, type FC } from "react";
 import './Main.css';
 import { assets } from "../../assets/assets";
-import { AppContext, ResultContext } from "../../context/Context";
-import ReactMarkdown from "react-markdown";
+import { AppContext } from "../../context/Context";
 import { SearchInput } from "../SearchInput/SearchInput";
 import { Greeting } from "../Greeting/Greeting";
 import { Chat } from "../Chat/Chat";
 
 export const Main: FC = () => {
-    console.log('Main');
     const { showResult } = useContext(AppContext);
 
     return (

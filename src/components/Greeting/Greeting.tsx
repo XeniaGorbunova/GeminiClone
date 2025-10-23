@@ -3,7 +3,6 @@ import { assets } from "../../assets/assets";
 import './Greeting.css';
 
 export const Greeting: FC = memo(() => {
-    console.log('Greeting');
     return (
         <>
             <div className="greet">

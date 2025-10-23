@@ -1,11 +1,9 @@
-import { useContext, useState, type FC } from "react";
+import { memo, useContext, useState, type FC } from "react";
 import './sidebar.css';
 import { assets } from '../../assets/assets';
 import { AppContext } from "../../context/Context";
-import React from "react";
 
-export const Sidebar: FC = React.memo(() => {
-    console.log('Sidebar');
+export const Sidebar: FC = memo(() => {
     const [extended, setExtended] = useState(false);
     const { onSent, prevPrompts, setRecentPrompt, newChat } = useContext(AppContext);
 
