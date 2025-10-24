@@ -1,8 +1,7 @@
 import { GoogleGenAI } from "@google/genai";
+import { getEnvVariable } from "../helpers/environment";
 
-const apiKey = "AIzaSyDOCgN7Lqmtxk8wbhWtpKOsnXM5OjmhJtU";
-
-const ai = new GoogleGenAI({ apiKey });
+const ai = new GoogleGenAI({ apiKey: getEnvVariable("VITE_GEMINI_API_KEY") });
 
 export const runChat = async (prompt: string): Promise<string> => {
   const response = await ai.models.generateContent({
