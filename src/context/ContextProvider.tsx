@@ -10,6 +10,7 @@ export const ContextProvider = (props: {children: ReactNode}) => {
     const [showResult, setShowResult] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [resultData, setResultData] = useState('');
+    const [lastResult, setLastResult] = useState('');
     const [error, setError] = useState('');
 
     // Use ref to track all active timeouts
@@ -39,6 +40,11 @@ export const ContextProvider = (props: {children: ReactNode}) => {
     }, [clearAllTimeouts]);
 
     const onSent = useCallback<AppContextType['onSent']>(async (prompt: string) => {
+        if (recentThread.at(-1) && !recentThread.at(-1)!.result) {
+            setRecentThread((prev) => [...prev.slice(0, -1), {prompt: prev.at(-1)!.prompt, result: lastResult}]);
+        }
+
+        setLastResult('');
         setResultData('');
         setIsLoading(true);
         setShowResult(true);
@@ -46,6 +52,7 @@ export const ContextProvider = (props: {children: ReactNode}) => {
 
         try {
             const response = await runChat(prompt);
+            setLastResult(response);
             const responseArray = response.split(' ');
             responseArray.forEach((word, index) => delayPara(index, word + ' '));
 
@@ -54,17 +61,16 @@ export const ContextProvider = (props: {children: ReactNode}) => {
             if (threadIndex === -1) {
                 localStorageHandler.savePrevThreads([...prevThreads, [...recentThread, {prompt, result: response}]]);
                 setPrevThreads((prev) => [... prev, [...recentThread, {prompt, result: response}]]);
+                console.log([... prevThreads, [...recentThread, {prompt, result: response}]]);
             } else {
                 const mappedThreads = prevThreads.map((thread: Thread[], index: number) => {
-                    if (index === threadIndex) return [...recentThread, {prompt, result: response}];
+                    if (index === threadIndex) return [...thread, {prompt, result: response}];
 
-                    return thread;
+                    return structuredClone(thread);
                 });
                 setPrevThreads(mappedThreads);
                 localStorageHandler.savePrevThreads(mappedThreads);
             }
-
-            setRecentThread((prev) => [...prev.slice(0, -1), {prompt, result: response}]);
         } catch(error) {
             if (error instanceof Error) {
                 setError(error.message);
@@ -77,7 +83,7 @@ export const ContextProvider = (props: {children: ReactNode}) => {
         } finally {
             setIsLoading(false);
         }
-    }, [recentThread, prevThreads]);
+    }, [recentThread, prevThreads, lastResult]);
 
     const appContextValue = useMemo<AppContextType>(() => ({
         prevThreads,
