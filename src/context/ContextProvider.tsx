@@ -4,6 +4,8 @@ import { runChat } from "../config/gemini";
 import { type ResultContextType, type AppContextType, type ErrorContextType, type Thread } from "./models";
 import { localStorageHandler } from "../helpers/LocalStorageHandler";
 
+const TYPING_DELAY_MS = 15;
+
 export const ContextProvider = (props: {children: ReactNode}) => {
     const [recentThread, setRecentThread] = useState<Thread[]>([]);
     const [prevThreads, setPrevThreads] = useState<Thread[][]>(localStorageHandler.getPrevThreads());
@@ -23,14 +25,25 @@ export const ContextProvider = (props: {children: ReactNode}) => {
         timeoutRefs.current = []; // Reset the array
     }, []);
 
-    const delayPara = (index: number, nextWord: string) => {
+    const typingEffect = useCallback((index: number, nextWord: string) => {
         const timeoutId = setTimeout(
             function() {
                 setResultData((prev) => prev + nextWord)
-            }, 15 * index)
+            }, TYPING_DELAY_MS * index)
 
         timeoutRefs.current.push(timeoutId);    
-    };
+    }, []);
+
+    const handleError = useCallback((error: unknown) => {
+        if (error instanceof Error) {
+                setError(error.message);
+            } else if (typeof error === 'string') {
+                setError(error);
+            } else {
+                setError('Failed to get response from AI');
+                console.error(error);
+            }
+    }, []);
 
     const newChat = useCallback<AppContextType['newChat']>(() => {
         setRecentThread([]);
@@ -54,7 +67,7 @@ export const ContextProvider = (props: {children: ReactNode}) => {
             const response = await runChat(prompt);
             setLastResult(response);
             const responseArray = response.split(' ');
-            responseArray.forEach((word, index) => delayPara(index, word + ' '));
+            responseArray.forEach((word, index) => typingEffect(index, word + ' '));
 
             const threadIndex = prevThreads.findIndex((thread: Thread[]) => thread[0].prompt === (recentThread[0]?.prompt ?? prompt));
 
@@ -72,18 +85,11 @@ export const ContextProvider = (props: {children: ReactNode}) => {
                 localStorageHandler.savePrevThreads(mappedThreads);
             }
         } catch(error) {
-            if (error instanceof Error) {
-                setError(error.message);
-            } else if (typeof error === 'string') {
-                setError(error);
-            } else {
-                setError('Failed to get response from AI');
-                console.error(error);
-            }
+            handleError(error);
         } finally {
             setIsLoading(false);
         }
-    }, [recentThread, prevThreads, lastResult]);
+    }, [recentThread, prevThreads, lastResult, handleError, typingEffect]);
 
     const appContextValue = useMemo<AppContextType>(() => ({
         prevThreads,
