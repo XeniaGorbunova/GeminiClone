@@ -1,11 +1,17 @@
+export interface Thread {
+  prompt: string;
+  result: string;
+}
+
 export interface AppContextType {
-  prevPrompts: string[];
-  setPrevPrompts: React.Dispatch<React.SetStateAction<string[]>>;
+  prevThreads: Thread[][];
+  setPrevThreads: React.Dispatch<React.SetStateAction<Thread[][]>>;
   onSent: (prompt: string) => Promise<void>;
-  recentPrompt: string;
-  setRecentPrompt: React.Dispatch<React.SetStateAction<string>>;
+  recentThread: Thread[];
+  setRecentThread: React.Dispatch<React.SetStateAction<Thread[]>>;
   isLoading: boolean;
   showResult: boolean;
+  setShowResult: React.Dispatch<React.SetStateAction<boolean>>;
   newChat: () => void;
 }
 

@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { AppContext, ErrorContext, ResultContext } from "./Context";
 import { runChat } from "../config/gemini";
-import { type ResultContextType, type AppContextType, type ErrorContextType } from "./models";
+import { type ResultContextType, type AppContextType, type ErrorContextType, type Thread } from "./models";
 import { localStorageHandler } from "../helpers/LocalStorageHandler";
 
 export const ContextProvider = (props: {children: ReactNode}) => {
-    const [recentPrompt, setRecentPrompt] = useState('');
-    const [prevPrompts, setPrevPrompts] = useState<string[]>(localStorageHandler.getPrevPrompts());
+    const [recentThread, setRecentThread] = useState<Thread[]>([]);
+    const [prevThreads, setPrevThreads] = useState<Thread[][]>(localStorageHandler.getPrevThreads());
     const [showResult, setShowResult] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [resultData, setResultData] = useState('');
@@ -14,6 +14,13 @@ export const ContextProvider = (props: {children: ReactNode}) => {
 
     // Use ref to track all active timeouts
     const timeoutRefs = useRef<number[]>([]);
+
+    const clearAllTimeouts = useCallback(() => {
+        timeoutRefs.current.forEach((timeoutId) => {
+            clearTimeout(timeoutId);
+        });
+        timeoutRefs.current = []; // Reset the array
+    }, []);
 
     const delayPara = (index: number, nextWord: string) => {
         const timeoutId = setTimeout(
@@ -25,26 +32,39 @@ export const ContextProvider = (props: {children: ReactNode}) => {
     };
 
     const newChat = useCallback<AppContextType['newChat']>(() => {
-        console.log('New Chat');
+        setRecentThread([]);
         setIsLoading(false);
         setShowResult(false);
         clearAllTimeouts();
-    }, []);
+    }, [clearAllTimeouts]);
 
     const onSent = useCallback<AppContextType['onSent']>(async (prompt: string) => {
         setResultData('');
         setIsLoading(true);
         setShowResult(true);
-        setRecentPrompt(prompt);
-        if (!prevPrompts.includes(prompt)) {
-            localStorageHandler.savePrevPrompts([...prevPrompts, prompt]);
-            setPrevPrompts((prev) => [...prev, prompt]);
-        }
+        setRecentThread((prev) => [...prev, {prompt, result: ''}]);
 
         try {
             const response = await runChat(prompt);
             const responseArray = response.split(' ');
             responseArray.forEach((word, index) => delayPara(index, word + ' '));
+
+            const threadIndex = prevThreads.findIndex((thread: Thread[]) => thread[0].prompt === (recentThread[0]?.prompt ?? prompt));
+
+            if (threadIndex === -1) {
+                localStorageHandler.savePrevThreads([...prevThreads, [...recentThread, {prompt, result: response}]]);
+                setPrevThreads((prev) => [... prev, [...recentThread, {prompt, result: response}]]);
+            } else {
+                const mappedThreads = prevThreads.map((thread: Thread[], index: number) => {
+                    if (index === threadIndex) return [...recentThread, {prompt, result: response}];
+
+                    return thread;
+                });
+                setPrevThreads(mappedThreads);
+                localStorageHandler.savePrevThreads(mappedThreads);
+            }
+
+            setRecentThread((prev) => [...prev.slice(0, -1), {prompt, result: response}]);
         } catch(error) {
             if (error instanceof Error) {
                 setError(error.message);
@@ -57,28 +77,22 @@ export const ContextProvider = (props: {children: ReactNode}) => {
         } finally {
             setIsLoading(false);
         }
-    }, [prevPrompts]);
+    }, [recentThread, prevThreads]);
 
     const appContextValue = useMemo<AppContextType>(() => ({
-        prevPrompts,
-        setPrevPrompts,
+        prevThreads,
+        setPrevThreads,
         onSent,
-        recentPrompt,
-        setRecentPrompt,
+        recentThread,
+        setRecentThread,
         isLoading,
         showResult,
+        setShowResult,
         newChat
-    }), [prevPrompts, setPrevPrompts, onSent, recentPrompt, setRecentPrompt, isLoading, showResult, newChat]);
+    }), [prevThreads, setPrevThreads, onSent, recentThread, setRecentThread, isLoading, showResult, setShowResult, newChat]);
 
     const resultContextValue = useMemo<ResultContextType>(() => ({resultData}), [resultData]);
     const errorContextValue = useMemo<ErrorContextType>(() => ({ error, setError }), [error, setError]);
-
-    const clearAllTimeouts = useCallback(() => {
-        timeoutRefs.current.forEach((timeoutId) => {
-            clearTimeout(timeoutId);
-        });
-        timeoutRefs.current = []; // Reset the array
-    }, []);
 
     useEffect(() => {
         return () => {

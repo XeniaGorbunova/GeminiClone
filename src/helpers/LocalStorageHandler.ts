@@ -1,15 +1,19 @@
-export class localStorageHandler {
-  public static PREV_PROMPTS_STORAGE_KEY = "prevPrompts";
+import type { Thread } from "../context/models";
 
-  public static savePrevPrompts(prevPrompts: string[]): void {
+export class localStorageHandler {
+  public static PREV_THREADS_STORAGE_KEY = "prevThreads";
+
+  public static savePrevThreads(prevPrompts: Thread[][]): void {
     localStorage.setItem(
-      this.PREV_PROMPTS_STORAGE_KEY,
+      this.PREV_THREADS_STORAGE_KEY,
       JSON.stringify(prevPrompts)
     );
   }
 
-  public static getPrevPrompts(): string[] {
-    const promptsFromStorage = localStorage.getItem(this.PREV_PROMPTS_STORAGE_KEY);
+  public static getPrevThreads(): Thread[][] {
+    const promptsFromStorage = localStorage.getItem(
+      this.PREV_THREADS_STORAGE_KEY
+    );
 
     return promptsFromStorage ? JSON.parse(promptsFromStorage) : [];
   }

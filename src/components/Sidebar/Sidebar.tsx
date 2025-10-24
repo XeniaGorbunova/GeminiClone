@@ -3,22 +3,24 @@ import './sidebar.css';
 import { assets } from '../../assets/assets';
 import { AppContext } from "../../context/Context";
 import { localStorageHandler } from "../../helpers/LocalStorageHandler";
+import type { Thread } from "../../context/models";
 
 export const Sidebar: FC = memo(() => {
     const [extended, setExtended] = useState(false);
-    const { onSent, prevPrompts, setRecentPrompt, newChat, setPrevPrompts } = useContext(AppContext);
+    const { prevThreads, newChat, setPrevThreads, setRecentThread, setShowResult } = useContext(AppContext);
 
-    const loadPrompt = async (prompt: string) => {
-        setRecentPrompt(prompt);
-        await onSent(prompt);
+    const setThread = (index: number) => {
+        setRecentThread([...prevThreads[index]]);
+        setShowResult(true);
     }
 
-    const deletePrompt = (e: React.MouseEvent<HTMLImageElement>, prompt: string) => {
+    const deleteThread = (e: React.MouseEvent<HTMLImageElement>, index: number) => {
         e.stopPropagation();
 
-        const filteredPrompts = prevPrompts.filter((item: string) => item !== prompt);
-        setPrevPrompts(filteredPrompts);
-        localStorageHandler.savePrevPrompts(filteredPrompts);
+        const threads = [...prevThreads];
+        threads.splice(index, 1);
+        setPrevThreads(threads);
+        localStorageHandler.savePrevThreads(threads);
     }
 
     const collapseMenuHandler = () => setExtended((prev) => !prev);
@@ -35,14 +37,14 @@ export const Sidebar: FC = memo(() => {
                     <div className="recent">
                         <p className="recent-title">Recent</p>
                         <div className="recent-entries">
-                            {prevPrompts.map((prompt: string, index: number) => {
+                            {prevThreads.map((thread: Thread[], index: number) => {
                             return (
-                            <div key={index} onClick={() => loadPrompt(prompt)} className="recent-entry">
+                            <div key={index} onClick={() => setThread(index)} className="recent-entry">
                                 <div className="recent-entry-text">
                                     <img src={assets.message_icon} alt="message" />
-                                    <p>{prompt.slice(0, 18)} ...</p>
+                                    <p>{thread[0].prompt.slice(0, 18)} ...</p>
                                 </div>
-                                <img className="trash-icon" src={assets.trash_icon} alt="delete" onClick={(e) => deletePrompt(e, prompt)} />
+                                <img className="trash-icon" src={assets.trash_icon} alt="delete" onClick={(e) => deleteThread(e, index)} />
                             </div>
                             )
                         })}
